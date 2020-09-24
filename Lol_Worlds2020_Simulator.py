@@ -2,6 +2,10 @@ import random
 import collections
 import itertools
 from itertools import permutations
+import matplotlib.pyplot as plt
+import numpy as np
+import copy
+import time
 
 class Group :
     def __init__(self, p_group_teams, p_group_records) :
@@ -12,9 +16,9 @@ class Group :
         return ("équipes du groupe : " + str(self.group_records))
 
 class Result_BO :
-    def __init__(self, p_lose_team, p_win_team) :
-        self.lose_team = p_lose_team
+    def __init__(self, p_win_team, p_lose_team) :
         self.win_team = p_win_team
+        self.lose_team = p_lose_team
 
 region_teams = {"CHN" : ["TES", "JDG", "SNG", "LGD"], "EU" : ["G2", "FNC", "RGE", "MAD"], "KR" : ["DWG", "DRX", "GEN"], "NA" : ["TSM", "FLY", "TL"], "PCS" : ["MCX", "PSG"], "OCE" : ["LGC"], "TUR" : ["SUP"], "BRE" : ["INZ"], "JPN" : ["V3"], "RUS" : ["UOL"], "LAT" : ["R7"]}
 
@@ -50,16 +54,16 @@ main_group_D = ["TES", "DRX", "FLY"]
 records_main_group_D = {"TES" : [], "DRX" : [], "FLY" : []}
 group_D_main_init = Group(main_group_D, records_main_group_D)
 
-list_main_groups_init = [main_group_A, main_group_B, main_group_C, main_group_D]
+list_main_groups_init = [["G2", "SNG", "MCX"], ["DWG", "JDG", "RGE"], ["TSM", "GEN", "FNC"], ["TES", "DRX", "FLY"]]
 
 def all_games(group) :
     teams = group.group_teams
     records = group.group_records
     for i in range(len(teams)) :
         teamA = teams[i]
+        rating_A = teams_ratings[teamA]
         for j in range(i + 1, len(teams)) :
             teamB = teams[j]
-            rating_A = teams_ratings[teamA]
             rating_B = teams_ratings[teamB]
             odd_victory_A = rating_A / (rating_A + rating_B)
             if random.uniform(0, 1) < odd_victory_A :
@@ -78,7 +82,10 @@ def best_of_n(nb_games, team_A, team_B) :
     vict_B = 0
     games_to_win = (nb_games // 2) + 1
     while (vict_A < games_to_win and vict_B < games_to_win) :
-        if (random.uniform(0, 1) < teams_ratings[team_A]) :
+        rating_A = teams_ratings[team_A]
+        rating_B = teams_ratings[team_B]
+        odd_victory_A = rating_A / (rating_A + rating_B)
+        if (random.uniform(0, 1) < odd_victory_A) :
             vict_A = vict_A + 1
         else :
             vict_B = vict_B + 1
@@ -272,7 +279,6 @@ def resolve_main_ties(results_group, list_ties) :
             pos = tie_2_seeds_for_4_teams(random_list_teams)
             for i in range(4) :
                 list_resolved_ties.append((seeds_to_tie[i], pos[i]))
-
     return list_resolved_ties
 
 def head_to_head(res_group, teams) :
@@ -296,16 +302,18 @@ def affect_play_in_team(list_teams, affects_group) :
                 compatibilities[team].append(i)
         else :
             for i in range(4) :
-                group = list_main_groups[i]
+                group = list_main_groups_init[i].copy()
                 for group_team in group :
                     if region == team_regions[group_team] :
                         break
+
                 else :
                     compatibilities[team].append(i)
-    generate_all_affectations(list(compatibilities.items()), affects_group)
+    list_all_affects = []
+    generate_all_affectations(list(compatibilities.items()), affects_group, list_all_affects)
     return list_all_affects
 
-def generate_all_affectations(compatibilities, current_affect) :
+def generate_all_affectations(compatibilities, current_affect, list_all_affects) :
     if group_already_affected(current_affect) :
         return False
 
@@ -317,7 +325,7 @@ def generate_all_affectations(compatibilities, current_affect) :
     for num_group in team_comp[1] :
         copy_current_affect = current_affect.copy()
         copy_current_affect.append((team_comp[0], num_group))
-        generate_all_affectations(compatibilities[1:], copy_current_affect)
+        generate_all_affectations(compatibilities[1:], copy_current_affect, list_all_affects)
 
 def group_already_affected(current_affect) :
     list_num_group = list(range(4))
@@ -353,7 +361,7 @@ def generate_all_quarters(list_first_seed, list_second_seed) :
     return(unique_combinations)
 
 
-def get_quarter(list_pos_groups) :
+def get_quarter(list_pos_groups, list_all_quarters) :
     list_matches = []
     i = random.randrange(9)
     affect_quarters = list_all_quarters[i]
@@ -423,9 +431,7 @@ def play_in(group_A, group_B) :
     list_all_affects = []
 
     affects_group = []
-
     list_all_affects = affect_play_in_team(play_in_qualified_teams, affects_group)
-
     affect = choose_random_affect(list_all_affects)
     return affect
 
@@ -456,11 +462,9 @@ def main_groups(list_main_groups, affect) :
 
     list_main_groups_pos = [group_A_main_pos, group_B_main_pos, group_C_main_pos, group_D_main_pos]
 
-    print(list_main_groups_pos)
-
     list_all_quarters = generate_all_quarters(list(range(4)), list(range(4)))
 
-    list_quarters = get_quarter(list_main_groups_pos)
+    list_quarters = get_quarter(list_main_groups_pos, list_all_quarters)
 
     print(list_quarters)
 
@@ -474,24 +478,70 @@ def main_groups(list_main_groups, affect) :
 
     final_winner = best_of_n(5, res_semis[0], res_semis[1]).win_team
     print(final_winner)
-    return final_winner
+    return (final_winner, list_quarters)
 
 def tournament() :
-    group_A_play_in = Group(play_in_group_A, records_play_in_group_A)
-    group_B_play_in = Group(play_in_group_B, records_play_in_group_B)
+    group_A_play_in = copy.deepcopy(Group(play_in_group_A, records_play_in_group_A))
+    group_B_play_in = copy.deepcopy(Group(play_in_group_B, records_play_in_group_B))
+
     affect = play_in(group_A_play_in, group_B_play_in)
 
-    group_A_main = Group(main_group_A, records_main_group_A)
-    group_B_main = Group(main_group_B, records_main_group_B)
-    group_C_main = Group(main_group_C, records_main_group_C)
-    group_D_main = Group(main_group_D, records_main_group_D)
+    group_A_main = copy.deepcopy(Group(main_group_A, records_main_group_A))
+    group_B_main = copy.deepcopy(Group(main_group_B, records_main_group_B))
+    group_C_main = copy.deepcopy(Group(main_group_C, records_main_group_C))
+    group_D_main = copy.deepcopy(Group(main_group_D, records_main_group_D))
 
     list_main_groups = [group_A_main, group_B_main, group_C_main, group_D_main]
 
-    champion = main_groups(list_main_groups, affect)
+    (champion, liste_quarts) = main_groups(list_main_groups, affect)
 
-    return champion
 
-print("Champions du monde : " + tournament())
+    print(group_A_main)
+    print()
+
+    return (champion, liste_quarts)
+
+nb_victories = {}
+
+nb_quarts = {}
+
+for team in team_regions :
+    nb_victories[team] = 0
+    nb_quarts[team] = 0
+
+for i in range(1000) :
+    (champion, liste_quart_finalistes) = tournament()
+    for quart_de_finale in liste_quart_finalistes :
+        nb_quarts[quart_de_finale[0]] = nb_quarts[quart_de_finale[0]] + 1
+        nb_quarts[quart_de_finale[1]] = nb_quarts[quart_de_finale[1]] + 1
+    nb_victories[champion] = nb_victories[champion] + 1
+
+
+
+l1=sorted(nb_quarts.items())
+fig, ax = plt.subplots()
+ax.bar(range(len(l1)), [t[1] for t in l1]  , align="center")
+ax.set_xticks(range(len(l1)))
+ax.set_xticklabels([t[0] for t in l1])
+fig.autofmt_xdate()
+plt.title("Quarts de finaliste")
+
+l2=sorted(nb_victories.items())
+fig, ax = plt.subplots()
+ax.bar(range(len(l2)), [t[1] for t in l2]  , align="center")
+ax.set_xticks(range(len(l2)))
+ax.set_xticklabels([t[0] for t in l2])
+fig.autofmt_xdate()
+plt.title("Vainqueurs")
+
+lproba=sorted(teams_ratings.items())
+fig, ax = plt.subplots()
+ax.bar(range(len(lproba)), [t[1] for t in lproba]  , align="center")
+ax.set_xticks(range(len(lproba)))
+ax.set_xticklabels([t[0] for t in lproba])
+fig.autofmt_xdate()
+plt.title("Ratings")
+
+plt.show()
 
 
