@@ -28,6 +28,8 @@ wild_card = ["OCE", "TUR", "BRE", "JPN", "RUS", "LAT"]
 
 teams_ratings = {"TES" : 7.257, "DWG" : 7.207, "G2" : 6.884, "JDG" : 6.108, "DRX" : 5.789, "GEN" : 5.713, "FNC" : 5.564, "SNG" : 5.224, "LGD" : 5.154, "RGE" : 4.714, "TSM" : 4.659, "MAD" : 4.383, "TL" : 3.736, "FLY" : 3.698, "UOL" : 3.000, "SUP": 1.674, "MCX" : 1.552, "PSG" : 1.547, "INZ" : 1.485, "V3" : 1.255, "R7" : 0.750, "LGC" : 0.646}
 
+play_in_teams = ["TL", "MAD", "LGC", "SUP", "INZ", "LGD", "PSG", "V3", "UOL", "R7"]
+
 play_in_group_A = ["TL", "MAD", "LGC", "SUP", "INZ"]
 records_play_in_group_A = {"TL" : [], "MAD" : [], "LGC" : [], "SUP" : [], "INZ" : []}
 group_A_play_in_init = Group(play_in_group_A, records_play_in_group_A)
@@ -55,6 +57,69 @@ records_main_group_D = {"TES" : [], "DRX" : [], "FLY" : []}
 group_D_main_init = Group(main_group_D, records_main_group_D)
 
 list_main_groups_init = [["G2", "SNG", "MCX"], ["DWG", "JDG", "RGE"], ["TSM", "GEN", "FNC"], ["TES", "DRX", "FLY"]]
+
+class Results_available :
+    def __init__(self, p_group_A_play_in_res, p_group_B_play_in_res, p_barrages_res, p_group_A_main_res, p_group_B_main_res, p_group_C_main_res, p_group_D_main_res, p_coupe_phase_res) :
+        self.group_A_play_in_res = p_group_A_play_in_res
+        self.group_B_play_in_res = p_group_B_play_in_res
+        self.barrages_res = p_barrages_res
+        self.group_A_main_res = p_group_A_main_res
+        self.group_B_main_res = p_group_B_main_res
+        self.group_C_main_res_res = p_group_C_main_res
+        self.group_D_main_res_res = p_group_D_main_res
+        self.p_coupe_phase_res = p_coupe_phase_res
+
+# Use these results value to launch a full simulation
+#dict_res_group_A_play_in = {"TL" : [], "MAD" : [], "LGC" : [], "SUP" : [], "INZ" : []}
+#dict_res_group_B_play_in = {"LGD" : [], "PSG" : [], "V3" : [], "UOL" : [], "R7" : []}
+#dict = {}
+
+# Results are updated each day of competition
+dict_res_play_in_A = {"TL" : ["MAD"], "MAD" : ["INZ"], "LGC" : ["INZ"], "SUP" : [], "INZ" : []}
+
+dict_res_play_in_B = {"LGD" : [], "PSG" : ["LGD", "R7"], "V3" : [], "UOL" : [], "R7" : []}
+
+dict_res_main_A = {"G2" : [], "SNG" : [], "MCX" : []}
+dict_res_main_B = {"DWG" : [], "JDG" : [], "RGE" : []}
+dict_res_main_C = {"TSM" : [], "GEN" : [], "FNC" : []}
+dict_res_main_D = {"TES" : [], "DRX" : [], "FLY" : []}
+
+list_res_available = Results_available(dict_res_play_in_A, dict_res_play_in_B, dict_no_res, dict_res_main_A, dict_res_main_B, dict_res_main_C, dict_res_main_D, dict_no_res)
+
+def get_phase_tournament_dict_res(type_groupe) :
+    if type_groupe[1] == "A" :
+        return list_res_available.group_A_play_in_res
+    elif type_groupe[1] == "B" :
+        return list_res_available.group_B_play_in_res
+    else :
+        return {}
+
+def all_games_play_in(group, type_groupe) :
+    teams = group.group_teams
+    records = group.group_records
+    phase_res_available = get_phase_tournament_dict_res(type_groupe)
+    for i in range(len(teams)) :
+        teamA = teams[i]
+        rating_A = teams_ratings[teamA]
+        for j in range(i + 1, len(teams)) :
+            teamB = teams[j]
+            if (not teamB in phase_res_available[teamA]) and (not teamA in phase_res_available[teamB]) :
+                rating_B = teams_ratings[teamB]
+                odd_victory_A = rating_A / (rating_A + rating_B)
+                if random.uniform(0, 1) < odd_victory_A :
+                    records[teamA].append(teamB)
+                else :
+                    records[teamB].append(teamA)
+            elif teamB in phase_res_available[teamA] :
+                records[teamA].append(teamB)
+            else :
+                records[teamB].append(teamA)
+
+    sorted_records ={}
+    for team in sorted(records, key=lambda team: len(records[team]), reverse=True):
+        sorted_records[team] = records[team]
+
+    group.group_records = sorted_records
 
 def all_games(group) :
     teams = group.group_teams
@@ -399,11 +464,15 @@ def place_affected_teams(list_groups, affect) :
 
 def play_in(group_A, group_B) :
 
-    all_games(group_A)
-    all_games(group_B)
+    all_games_play_in(group_A, ("play-in", "A"))
+    all_games_play_in(group_B, ("play-in", "B"))
 
-    results_play_in_group_A = group_A.group_records
+
+    results_play_in_group_A = {"TL" : ["MAD", "LGC"], "MAD" : ["LGC", "SUP"], "LGC" : ["SUP", "INZ"], "SUP" : ["INZ", "TL"], "INZ" : ["TL", "MAD"]}
+    #results_play_in_group_A = group_A.group_records
     results_play_in_group_B = group_B.group_records
+
+    print(results_play_in_group_B)
 
     list_ties_play_in_A = all_ties_play_in(results_play_in_group_A)
     list_ties_play_in_B = all_ties_play_in(results_play_in_group_B)
@@ -433,7 +502,7 @@ def play_in(group_A, group_B) :
     affects_group = []
     list_all_affects = affect_play_in_team(play_in_qualified_teams, affects_group)
     affect = choose_random_affect(list_all_affects)
-    return affect
+    return (affect, play_in_qualified_teams)
 
 def main_groups(list_main_groups, affect) :
 
@@ -484,7 +553,7 @@ def tournament() :
     group_A_play_in = copy.deepcopy(Group(play_in_group_A, records_play_in_group_A))
     group_B_play_in = copy.deepcopy(Group(play_in_group_B, records_play_in_group_B))
 
-    affect = play_in(group_A_play_in, group_B_play_in)
+    (affect, list_qualified_from_play_in) = play_in(group_A_play_in, group_B_play_in)
 
     group_A_main = copy.deepcopy(Group(main_group_A, records_main_group_A))
     group_B_main = copy.deepcopy(Group(main_group_B, records_main_group_B))
@@ -499,24 +568,37 @@ def tournament() :
     print(group_A_main)
     print()
 
-    return (champion, liste_quarts)
+    return (champion, list_qualified_from_play_in, liste_quarts)
 
 nb_victories = {}
-
+nb_qualif_play_in = {}
 nb_quarts = {}
 
 for team in team_regions :
     nb_victories[team] = 0
     nb_quarts[team] = 0
 
+for team in play_in_teams :
+    nb_qualif_play_in[team] = 0
+
 for i in range(1000) :
-    (champion, liste_quart_finalistes) = tournament()
+    (champion, liste_qualifies_play_in, liste_quart_finalistes) = tournament()
     for quart_de_finale in liste_quart_finalistes :
         nb_quarts[quart_de_finale[0]] = nb_quarts[quart_de_finale[0]] + 1
         nb_quarts[quart_de_finale[1]] = nb_quarts[quart_de_finale[1]] + 1
+
+    for team in liste_qualifies_play_in :
+        nb_qualif_play_in[team] = nb_qualif_play_in[team] + 1
+
     nb_victories[champion] = nb_victories[champion] + 1
 
-
+lp=sorted(nb_qualif_play_in.items())
+fig, ax = plt.subplots()
+ax.bar(range(len(lp)), [t[1] for t in lp]  , align="center")
+ax.set_xticks(range(len(lp)))
+ax.set_xticklabels([t[0] for t in lp])
+fig.autofmt_xdate()
+plt.title("Equipes des play-in se qualifiant")
 
 l1=sorted(nb_quarts.items())
 fig, ax = plt.subplots()
@@ -533,14 +615,6 @@ ax.set_xticks(range(len(l2)))
 ax.set_xticklabels([t[0] for t in l2])
 fig.autofmt_xdate()
 plt.title("Vainqueurs")
-
-lproba=sorted(teams_ratings.items())
-fig, ax = plt.subplots()
-ax.bar(range(len(lproba)), [t[1] for t in lproba]  , align="center")
-ax.set_xticks(range(len(lproba)))
-ax.set_xticklabels([t[0] for t in lproba])
-fig.autofmt_xdate()
-plt.title("Ratings")
 
 plt.show()
 
