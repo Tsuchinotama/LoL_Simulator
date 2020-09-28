@@ -75,9 +75,9 @@ class Results_available :
 #dict = {}
 
 # Results are updated each day of competition
-dict_res_play_in_A = {"TL" : ["MAD"], "MAD" : ["INZ"], "LGC" : ["INZ"], "SUP" : [], "INZ" : []}
+dict_res_play_in_A = {"TL" : ["MAD", "LGC"], "MAD" : ["INZ"], "LGC" : ["INZ"], "SUP" : ["INZ", "MAD"], "INZ" : []}
 
-dict_res_play_in_B = {"LGD" : [], "PSG" : ["LGD", "R7"], "V3" : [], "UOL" : [], "R7" : []}
+dict_res_play_in_B = {"LGD" : [], "PSG" : ["LGD", "R7"], "V3" : ["R7"], "UOL" : ["V3", "PSG"], "R7" : ["LGD"]}
 
 dict_res_main_A = {"G2" : [], "SNG" : [], "MCX" : []}
 dict_res_main_B = {"DWG" : [], "JDG" : [], "RGE" : []}
