@@ -29,19 +29,19 @@ teams_ratings = {"TES" : 7.257, "DWG" : 7.207, "G2" : 6.884, "JDG" : 6.108, "DRX
 play_in_qualified_teams = []
 
 main_group_A = ["G2", "SNG", "MCX", "TL"]
-records_main_group_A = {"G2" : [], "SNG" : [], "MCX" : [], "TL" : []}
+records_main_group_A = {"G2" : [["SNG"], []], "SNG" : [[], []], "MCX" : [["TL"], []], "TL" : [[], []]}
 group_A_main_init = Group(main_group_A, records_main_group_A)
 
 main_group_B = ["DWG", "JDG", "RGE", "PSG"]
-records_main_group_B = {"DWG" : [], "JDG" : [], "RGE" : [], "PSG" : []}
+records_main_group_B = {"DWG" : [["JDG", "RGE"], []], "JDG" : [["PSG"], []], "RGE" : [["PSG"], []], "PSG" : [[], []]}
 group_B_main_init = Group(main_group_B, records_main_group_B)
 
 main_group_C = ["TSM", "GEN", "FNC", "LGD"]
-records_main_group_C = {"TSM" : [], "GEN" : [], "FNC" : [], "LGD" : []}
+records_main_group_C = {"TSM" : [[], []], "GEN" : [["LGD", "TSM"], []], "FNC" : [["TSM"], []], "LGD" : [["FNC"], []]}
 group_C_main_init = Group(main_group_C, records_main_group_C)
 
 main_group_D = ["TES", "DRX", "FLY"]
-records_main_group_D = {"TES" : [], "DRX" : [], "FLY" : [], "UOL" : []}
+records_main_group_D = {"TES" : [["FLY"], []], "DRX" : [["UOL"], []], "FLY" : [[], []], "UOL" : [[], []]}
 group_D_main_init = Group(main_group_D, records_main_group_D)
 
 list_main_groups_init = [["G2", "SNG", "MCX", "TL"], ["DWG", "JDG", "RGE", "PSG"], ["TSM", "GEN", "FNC", "LGD"], ["TES", "DRX", "FLY", "UOL"]]
@@ -67,10 +67,10 @@ dict_res_play_in_A = {"TL" : ["MAD", "LGC"], "MAD" : ["INZ"], "LGC" : ["INZ"], "
 
 dict_res_play_in_B = {"LGD" : [], "PSG" : ["LGD", "R7"], "V3" : ["R7"], "UOL" : ["V3", "PSG"], "R7" : ["LGD"]}
 
-dict_res_main_A = {"G2" : [], "SNG" : [], "MCX" : []}
-dict_res_main_B = {"DWG" : [], "JDG" : [], "RGE" : []}
-dict_res_main_C = {"TSM" : [], "GEN" : [], "FNC" : []}
-dict_res_main_D = {"TES" : [], "DRX" : [], "FLY" : []}
+dict_res_main_A = {"G2" : [[], []], "SNG" : [[], []], "MCX" : [[], []]}
+dict_res_main_B = {"DWG" : [[], []], "JDG" : [[], []], "RGE" : [[], []]}
+dict_res_main_C = {"TSM" : [[], []], "GEN" : [[], []], "FNC" : [[], []]}
+dict_res_main_D = {"TES" : [[], []], "DRX" : [[], []], "FLY" : [[], []]}
 
 list_res_available = Results_available(dict_res_play_in_A, dict_res_play_in_B, {}, dict_res_main_A, dict_res_main_B, dict_res_main_C, dict_res_main_D, {})
 
@@ -109,7 +109,30 @@ def all_games_play_in(group, type_groupe) :
 
     group.group_records = sorted_records
 
-def all_games_main(group) :
+def all_games_main_first_leg(group) :
+    teams = group.group_teams
+    records = group.group_records
+
+    for i in range(len(teams)) :
+        teamA = teams[i]
+        rating_A = teams_ratings[teamA]
+        for j in range(i + 1, len(teams)) :
+            teamB = teams[j]
+            if (not teamB in records[teamA][0]) and (not teamA in records[teamB][0]) :
+                rating_B = teams_ratings[teamB]
+                odd_victory_A = rating_A / (rating_A + rating_B)
+                if random.uniform(0, 1) < odd_victory_A :
+                    records[teamA][0].append(teamB)
+                else :
+                    records[teamB][0].append(teamA)
+
+    #sorted_records ={}
+    #for team in sorted(records, key=lambda team: len(records[team]), reverse=True):
+    #    sorted_records[team] = records[team]
+
+    #group.group_records = sorted_records
+
+def all_games_main_second_leg(group) :
     teams = group.group_teams
     records = group.group_records
     for i in range(len(teams)) :
@@ -117,18 +140,20 @@ def all_games_main(group) :
         rating_A = teams_ratings[teamA]
         for j in range(i + 1, len(teams)) :
             teamB = teams[j]
-            rating_B = teams_ratings[teamB]
-            odd_victory_A = rating_A / (rating_A + rating_B)
-            if random.uniform(0, 1) < odd_victory_A :
-                records[teamA].append(teamB)
-            else :
-                records[teamB].append(teamA)
+            if (not teamB in records[teamA][1]) and (not teamA in records[teamB][1]) :
+                rating_B = teams_ratings[teamB]
+                odd_victory_A = rating_A / (rating_A + rating_B)
+                if random.uniform(0, 1) < odd_victory_A :
+                    records[teamA][1].append(teamB)
+                else :
+                    records[teamB][1].append(teamA)
 
-    sorted_records ={}
-    for team in sorted(records, key=lambda team: len(records[team]), reverse=True):
-        sorted_records[team] = records[team]
-
-    group.group_records = sorted_records
+    # sorted_records = {}
+    #
+    # for team in sorted(records, key=lambda team: len(records[team]), reverse=True):
+    #     sorted_records[team] = records[team]
+    #
+    # group.group_records = sorted_records
 
 def best_of_n(nb_games, team_A, team_B) :
     vict_A = 0
@@ -495,15 +520,67 @@ def play_in(group_A, group_B) :
 def main_groups(list_main_groups) :
 
     for group in list_main_groups :
-        all_games_main(group)
+        all_games_main_first_leg(group)
 
     for group in list_main_groups :
-        all_games_main(group)
+        all_games_main_second_leg(group)
 
-    results_main_group_A = list_main_groups[0].group_records
-    results_main_group_B = list_main_groups[1].group_records
-    results_main_group_C = list_main_groups[2].group_records
-    results_main_group_D = list_main_groups[3].group_records
+    results_main_group_A = {"G2" : [], "SNG" : [], "MCX" : [], "TL" :  []}
+
+    for team in list_main_groups[0].group_records :
+        records_team = list_main_groups[0].group_records[team]
+        results_main_group_A[team] = records_team[0] + records_team[1]
+        #results_main_group_A = (list_main_groups[0].group_records)[0] + (list_main_groups[0].group_records)[1]
+
+    results_main_group_B = {"DWG" : [], "JDG" : [], "RGE" : [], "PSG" : []}
+
+    for team in list_main_groups[1].group_records :
+        records_team = list_main_groups[1].group_records[team]
+        results_main_group_B[team] = records_team[0] + records_team[1]
+        #results_main_group_B = (list_main_groups[1].group_records)[team][0] + (list_main_groups[1].group_records)[team][1]
+
+    results_main_group_C = {"TSM" : [], "FNC" : [], "GEN" : [], "LGD" : []}
+
+    for team in list_main_groups[2].group_records :
+        records_team = list_main_groups[2].group_records[team]
+        results_main_group_C[team] = records_team[0] + records_team[1]
+        #results_main_group_C = (list_main_groups[2].group_records)[team][0] + (list_main_groups[team][2].group_records)[team][1]
+
+    results_main_group_D = {"TES" : [], "DRX" : [], "FLY" : [], "UOL" : []}
+
+    for team in list_main_groups[3].group_records :
+        records_team = list_main_groups[3].group_records[team]
+        results_main_group_D[team] = records_team[0] + records_team[1]
+        #results_main_group_D = (list_main_groups[3].group_records)[team][0] + (list_main_groups[team][3].group_records)[team][1]
+
+    print(results_main_group_A)
+    print(results_main_group_B)
+    print(results_main_group_C)
+    print(results_main_group_D)
+
+    sorted_records = {}
+    for team in sorted(results_main_group_A, key=lambda team: len(results_main_group_A[team]), reverse=True):
+        sorted_records[team] = results_main_group_A[team]
+
+    results_main_group_A = sorted_records
+
+    sorted_records = {}
+    for team in sorted(results_main_group_B, key=lambda team: len(results_main_group_B[team]), reverse=True):
+        sorted_records[team] = results_main_group_B[team]
+
+    results_main_group_B = sorted_records
+
+    sorted_records = {}
+    for team in sorted(results_main_group_C, key=lambda team: len(results_main_group_C[team]), reverse=True):
+        sorted_records[team] = results_main_group_C[team]
+
+    results_main_group_C = sorted_records
+
+    sorted_records = {}
+    for team in sorted(results_main_group_D, key=lambda team: len(results_main_group_D[team]), reverse=True):
+        sorted_records[team] = results_main_group_D[team]
+
+    results_main_group_D = sorted_records
 
     list_ties_main_A = all_ties_main(results_main_group_A)
     list_ties_main_B = all_ties_main(results_main_group_B)
