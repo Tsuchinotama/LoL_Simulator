@@ -29,19 +29,19 @@ teams_ratings = {"TES" : 7.257, "DWG" : 7.207, "G2" : 6.884, "JDG" : 6.108, "DRX
 play_in_qualified_teams = []
 
 main_group_A = ["G2", "SNG", "MCX", "TL"]
-records_main_group_A = {"G2" : [["SNG"], []], "SNG" : [[], []], "MCX" : [["TL"], []], "TL" : [[], []]}
+records_main_group_A = {"G2" : [["SNG", "MCX"], []], "SNG" : [["TL", "MCX"], []], "MCX" : [["TL"], []], "TL" : [["G2"], []]}
 group_A_main_init = Group(main_group_A, records_main_group_A)
 
 main_group_B = ["DWG", "JDG", "RGE", "PSG"]
-records_main_group_B = {"DWG" : [["JDG", "RGE"], []], "JDG" : [["PSG"], []], "RGE" : [["PSG"], []], "PSG" : [[], []]}
+records_main_group_B = {"DWG" : [["JDG", "RGE", "PSG"], []], "JDG" : [["PSG", "RGE"], []], "RGE" : [["PSG"], []], "PSG" : [[], []]}
 group_B_main_init = Group(main_group_B, records_main_group_B)
 
 main_group_C = ["TSM", "GEN", "FNC", "LGD"]
-records_main_group_C = {"TSM" : [[], []], "GEN" : [["LGD", "TSM"], []], "FNC" : [["TSM"], []], "LGD" : [["FNC"], []]}
+records_main_group_C = {"TSM" : [[], []], "GEN" : [["LGD", "TSM"], []], "FNC" : [["TSM", "GEN"], []], "LGD" : [["FNC", "TSM"], []]}
 group_C_main_init = Group(main_group_C, records_main_group_C)
 
 main_group_D = ["TES", "DRX", "FLY"]
-records_main_group_D = {"TES" : [["FLY"], []], "DRX" : [["UOL"], []], "FLY" : [[], []], "UOL" : [[], []]}
+records_main_group_D = {"TES" : [["FLY", "DRX"], []], "DRX" : [["UOL", "FLY"], []], "FLY" : [["UOL"], []], "UOL" : [[], []]}
 group_D_main_init = Group(main_group_D, records_main_group_D)
 
 list_main_groups_init = [["G2", "SNG", "MCX", "TL"], ["DWG", "JDG", "RGE", "PSG"], ["TSM", "GEN", "FNC", "LGD"], ["TES", "DRX", "FLY", "UOL"]]
@@ -112,7 +112,6 @@ def all_games_play_in(group, type_groupe) :
 def all_games_main_first_leg(group) :
     teams = group.group_teams
     records = group.group_records
-
     for i in range(len(teams)) :
         teamA = teams[i]
         rating_A = teams_ratings[teamA]
@@ -485,8 +484,6 @@ def play_in(group_A, group_B) :
     #results_play_in_group_A = group_A.group_records
     results_play_in_group_B = group_B.group_records
 
-    print(results_play_in_group_B)
-
     list_ties_play_in_A = all_ties_play_in(results_play_in_group_A)
     list_ties_play_in_B = all_ties_play_in(results_play_in_group_B)
 
@@ -552,11 +549,6 @@ def main_groups(list_main_groups) :
         records_team = list_main_groups[3].group_records[team]
         results_main_group_D[team] = records_team[0] + records_team[1]
         #results_main_group_D = (list_main_groups[3].group_records)[team][0] + (list_main_groups[team][3].group_records)[team][1]
-
-    print(results_main_group_A)
-    print(results_main_group_B)
-    print(results_main_group_C)
-    print(results_main_group_D)
 
     sorted_records = {}
     for team in sorted(results_main_group_A, key=lambda team: len(results_main_group_A[team]), reverse=True):
@@ -635,7 +627,7 @@ for team in team_regions :
     nb_quarts[team] = 0
 
 
-for i in range(1) :
+for i in range(1000) :
     (champion, liste_quart_finalistes) = tournament()
     for quart_de_finale in liste_quart_finalistes :
         nb_quarts[quart_de_finale[0]] = nb_quarts[quart_de_finale[0]] + 1
