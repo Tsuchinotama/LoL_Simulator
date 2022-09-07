@@ -43,7 +43,7 @@ group_B_play_in_init = Group(play_in_group_C, records_play_in_group_C)
 
 play_in_qualified_teams = []
 
-main_group = []
+main_group = ["T1", "RNG", "G2", "PSG", "EG", "SAI"]
 records_main_group = {}
 main_group_init = Group(main_group, records_main_group)
 
@@ -408,13 +408,15 @@ def msi_main_group(main_group):
     all_games(main_group, 2)
 
     results_main_group = main_group.group_records
+    # print(results_main_group)
     list_ties_main_group = all_ties_main(results_main_group)
 
-def main_groups(main_group) :
+def main_groups(main_group):
     all_games(main_group, 1)
     all_games(main_group, 2)
 
     results_main_group = main_group.group_records
+    # print(results_main_group)
 
     list_ties_main = all_ties_main(results_main_group)
 
@@ -431,35 +433,36 @@ def main_groups(main_group) :
     return (final_winner, res_semis, matchup_semis)
 
 def tournament() :
-    group_A_play_in = copy.deepcopy(Group(play_in_group_A, records_play_in_group_A))
-    group_B_play_in = copy.deepcopy(Group(play_in_group_B, records_play_in_group_B))
-    group_C_play_in = copy.deepcopy(Group(play_in_group_C, records_play_in_group_C))
+    # group_A_play_in = copy.deepcopy(Group(play_in_group_A, records_play_in_group_A))
+    # group_B_play_in = copy.deepcopy(Group(play_in_group_B, records_play_in_group_B))
+    # group_C_play_in = copy.deepcopy(Group(play_in_group_C, records_play_in_group_C))
 
-    list_qualified_from_play_in = play_in(group_A_play_in, group_B_play_in, group_C_play_in)
+    # list_qualified_from_play_in = play_in(group_A_play_in, group_B_play_in, group_C_play_in)
 
-    records_main_group = {team : [] for team in list_qualified_from_play_in}
+    main_group_teams = ["T1", "RNG", "G2", "PSG", "EG", "SAI"]
+    records_main_group = {team : [] for team in main_group_teams}
 
-    main_group = copy.deepcopy(Group(list_qualified_from_play_in, records_main_group))
+    main_group = copy.deepcopy(Group(main_group_teams, records_main_group))
 
     # main_group = [group_A_main, group_B_main, group_C_main, group_D_main]
 
     res_knockout = main_groups(main_group)
 
-    return (res_knockout[0], res_knockout[1], res_knockout[2], list_qualified_from_play_in)
+    return (res_knockout[0], res_knockout[1], res_knockout[2])
 
 nb_victories = {}
 nb_finales = {}
 nb_demies = {}
 nb_qualif_wild_card = {}
 
-for team in list_all_teams :
+for team in main_group :
     nb_victories[team] = 0
     nb_finales[team] = 0
     nb_demies[team] = 0
-    nb_qualif_wild_card[team] = 0
 
-for i in range(1) :
-    (champion, liste_finalistes, liste_demis_finalistes, liste_qualifies_play_in) = tournament()
+for i in range(1000) :
+    (champion, liste_finalistes, liste_demis_finalistes) = tournament()
+    # (champion, liste_finalistes, liste_demis_finalistes, liste_qualifies_play_in) = tournament()
     nb_victories[champion] = nb_victories[champion] + 1
 
     for finaliste in liste_finalistes :
@@ -468,18 +471,11 @@ for i in range(1) :
     for demie in liste_demis_finalistes :
         nb_demies[demie] = nb_demies[demie] + 1
 
-    for team in liste_qualifies_play_in :
-        nb_qualif_wild_card[team] = nb_qualif_wild_card[team] + 1
-
-    nb_victories[champion] = nb_victories[champion] + 1
-
-lp=sorted(nb_qualif_wild_card.items())
-fig, ax = plt.subplots()
-ax.bar(range(len(lp)), [t[1] for t in lp]  , align="center")
-ax.set_xticks(range(len(lp)))
-ax.set_xticklabels([t[0] for t in lp])
-fig.autofmt_xdate()
-plt.title("Equipes des play-in se qualifiant")
+print(nb_demies)
+print()
+print(nb_finales)
+print()
+print(nb_victories)
 
 l1=sorted(nb_demies.items())
 fig, ax = plt.subplots()
