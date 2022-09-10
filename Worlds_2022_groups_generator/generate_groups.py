@@ -100,7 +100,7 @@ for i in range(len(set_all_groups)):
     for qualif_from_play_in in itertools.combinations(no_wildcard_play_in_teams, 4):
         if not check_valid_affect(qualif_from_play_in, list(main_groups))[0]:
             copy_set_all_groups.remove(main_groups)
-            list_set_groups_with_compatibility[i] = (main_groups, False)
+            list_set_groups_with_compatibility[i] = (main_groups, False, qualif_from_play_in)
             break
 
 # print(set_all_groups)
