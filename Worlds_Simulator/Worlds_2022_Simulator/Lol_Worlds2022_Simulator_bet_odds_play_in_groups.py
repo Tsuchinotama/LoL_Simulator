@@ -61,8 +61,8 @@ class Results_available :
         self.group_B_play_in_res = p_group_B_play_in_res
 
 # Use these results value to launch a full simulation
-dict_res_play_in_A = {"BYG" : [], "LOD" : [], "CHF" : [], "EG" : [], "DFM" : [], "FNC" : []}
-dict_res_play_in_B = {"SAI" : [], "IST" : [], "ISU" : [], "DRX" : [], "MAD" : [], "RNG" : []}
+dict_res_play_in_A = {"BYG" : ["LOD"], "LOD" : ["DFM"], "CHF" : [], "EG" : ["BYG", "LOD"], "DFM" : ["CHF"], "FNC" : ["EG", "CHF", "DFM"]}
+dict_res_play_in_B = {"SAI" : ["IST", "ISU"], "IST" : [], "ISU" : [], "DRX" : ["RNG", "SAI", "IST"], "MAD" : ["ISU", "IST"], "RNG" : ["MAD"]}
 dict_no_res = {}
 
 list_res_available = Results_available(dict_res_play_in_A, dict_res_play_in_B)
@@ -157,6 +157,14 @@ def choose_random_list(list_teams) :
     return new_list
 
 #retourne l'ordre après un tie-breaker à 3 équipes (toutes les équipes peuvent finir première)
+def tie_2_teams(list_teams) :
+    pos = []
+    result = best_of_n_same_group(1, list_teams[0], list_teams[1])
+    pos.append(result.win_team)
+    pos.append(result.lose_team)
+    return pos
+
+#retourne l'ordre après un tie-breaker à 3 équipes (toutes les équipes peuvent finir première)
 def tie_3_teams(list_teams) :
     (shortest_team, (longest_team_1, longest_team_2)) = choose_random_3(list_teams)
     pos = []
@@ -225,12 +233,13 @@ def resolve_play_in_ties(results_group, list_ties) :
             list_resolved_ties.append((seeds_to_tie[0], teams_to_tie[0]))
 
         elif len(teams_to_tie) == 2 :
-            if teams_to_tie[1] in results_group[teams_to_tie[0]] :
-                list_resolved_ties.append((seeds_to_tie[0], teams_to_tie[0]))
-                list_resolved_ties.append((seeds_to_tie[1], teams_to_tie[1]))
-            else :
-                list_resolved_ties.append((seeds_to_tie[0], teams_to_tie[1]))
-                list_resolved_ties.append((seeds_to_tie[1], teams_to_tie[0]))
+            pos = tie_2_teams(teams_to_tie)
+            # if teams_to_tie[1] in results_group[teams_to_tie[0]] :
+            #     list_resolved_ties.append((seeds_to_tie[0], teams_to_tie[0]))
+            #     list_resolved_ties.append((seeds_to_tie[1], teams_to_tie[1]))
+            # else :
+            #     list_resolved_ties.append((seeds_to_tie[0], teams_to_tie[1]))
+            #     list_resolved_ties.append((seeds_to_tie[1], teams_to_tie[0]))
 
         elif len(teams_to_tie) == 3 :
             res_between_3 = head_to_head(results_group, teams_to_tie)
@@ -330,7 +339,8 @@ def play_in(group_A, group_B) :
     results_play_in_group_A = group_A.group_records
     results_play_in_group_B = group_B.group_records
 
-    #print(results_play_in_group_B)
+    # print(results_play_in_group_A)
+    # print(results_play_in_group_B)
 
     list_ties_play_in_A = all_ties_play_in(results_play_in_group_A)
     list_ties_play_in_B = all_ties_play_in(results_play_in_group_B)
@@ -400,14 +410,24 @@ for i in range(1000):
         pos_B[team][place-1] = pos_B[team][place-1]+1    
 
 
-for team in play_in_group_A:
-    lp=pos_A[team]
-    print(team + " : " + str(lp))
-    fig, ax = plt.subplots()
-    ax.bar(x=range(6), height=lp, align="center")
-    ax.set_xticks(range(len(lp)))
-    ax.set_xticklabels(i for i in range(1,7))
-    fig.autofmt_xdate()
-    plt.title(team)
+# for team in play_in_group_A:
+#     lp=pos_A[team]
+#     print(team + " : " + str(lp))
+#     fig, ax = plt.subplots()
+#     ax.bar(x=range(6), height=lp, align="center")
+#     ax.set_xticks(range(len(lp)))
+#     ax.set_xticklabels(i for i in range(1,7))
+#     fig.autofmt_xdate()
+#     plt.title(team)
+
+# for team in play_in_group_B:
+#     lp=pos_B[team]
+#     print(team + " : " + str(lp))
+#     fig, ax = plt.subplots()
+#     ax.bar(x=range(6), height=lp, align="center")
+#     ax.set_xticks(range(len(lp)))
+#     ax.set_xticklabels(i for i in range(1,7))
+#     fig.autofmt_xdate()
+#     plt.title(team)
 
 plt.show()
