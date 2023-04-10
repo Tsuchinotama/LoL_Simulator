@@ -1,7 +1,9 @@
 import copy
+from http.client import RESET_CONTENT
 from itertools import permutations
 import collections
 import itertools
+import xlsxwriter
 
 all_main_teams = ["JDG", "TES", "EDG", "GENG", "T1", "DWG", "G2", "RGE", "C9", "100T", "CTO", "GAM"] 
 
@@ -110,4 +112,27 @@ print(set_all_groups.difference(copy_set_all_groups))
 print()
 print(list_set_groups_with_compatibility)
     
+workbook = xlsxwriter.Workbook('incompatible_groups_genrator.xlsx')
+worksheet = workbook.add_worksheet()
 
+content_titles = ["Groupe A", "Groupe B", "Groupe C", "Groupe D", "Exemple qualifications équipes play-in posant problème de compatibilité"]
+col = 0
+for content in content_titles:
+    worksheet.write(0, col, content)
+    col = col + 1
+
+row = 2
+
+for tirage in list_set_groups_with_compatibility:
+    if len(tirage) == 3:
+
+        list_tirage_groups = list(tirage[0])
+        for i in range(4):
+            group_to_write = list_tirage_groups[i][0] + "/" + list_tirage_groups[i][1] + "/" + list_tirage_groups[i][2]
+            worksheet.write(row, i, group_to_write)
+            play_in_qualif_to_write = tirage[2][0] + "/" + tirage[2][1] + "/" + tirage[2][2] + "/" + tirage[2][3]
+            worksheet.write(row, 4, play_in_qualif_to_write)
+
+        row = row + 1
+
+workbook.close()
