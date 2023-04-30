@@ -112,7 +112,7 @@ print(set_all_groups.difference(copy_set_all_groups))
 print()
 print(list_set_groups_with_compatibility)
     
-workbook = xlsxwriter.Workbook('incompatible_groups_genrator.xlsx')
+workbook = xlsxwriter.Workbook('incompatible_groups_generator.xlsx')
 worksheet = workbook.add_worksheet()
 
 content_titles = ["Groupe A", "Groupe B", "Groupe C", "Groupe D", "Exemple qualifications équipes play-in posant problème de compatibilité"]
