@@ -2,6 +2,7 @@ import copy
 from itertools import permutations
 import itertools
 import xlsxwriter
+import os
 
 all_main_teams = ["GENG", "T1", "JDG", "MAD","C9"] 
 
@@ -47,7 +48,7 @@ dict_all_main_phase = {}
 copy_main_phase = copy.deepcopy(main_phase_init)
 list_places_second_pool = list(permutations(main_teams_pool[2]))
 
-list_all_possible_play_in_qualifs = [["DFM", "PSGT", "GAM"], ["BLG", "GG", "G2"]]
+# list_all_possible_play_in_qualifs = [["DFM", "PSGT", "GAM"], ["BLG", "GG", "G2"]]
 
 for play_in_qualified_teams in list_all_possible_play_in_qualifs:
     tuple_play_in_qualified_teams = tuple(play_in_qualified_teams)
@@ -82,7 +83,8 @@ for play_in_qualified_teams in list_all_possible_play_in_qualifs:
 
 no_wildcard_play_in_teams = ["BLG", "G2", "GG"]
 
-workbook = xlsxwriter.Workbook('main_phase_generator.xlsx')
+dir_path = dir_path = os.path.dirname(os.path.realpath(__file__))
+workbook = xlsxwriter.Workbook(dir_path + '/main_phase_generator_from_start.xlsx')
 worksheet = workbook.add_worksheet()
 
 content_titles = ["Qualifications from play-ins", "Quarter 1", "Quarter 2", "Quarter 3", "Quarter 4"]
