@@ -12,24 +12,30 @@ play_in_group_A = ["BLG", "R7", "GG", "GAM"]
 play_in_group_B = ["G2", "LOUD", "PSGT", "DFM"]
 list_all_possible_play_in_qualifs = []
 
+# Both teams are already in loser bracket, so they can't qualify both to main bracket stage
+impossible_combinations_play_in_both_teams_qualifs_A = ["R7", "GAM"]
+impossible_combinations_play_in_both_teams_qualifs_B = ["LOUD", "DFM"]
+
 list_2_qualifs_from_A = [list(i) for i in itertools.combinations(play_in_group_A, 2)]
 for qualifs_group_A in list_2_qualifs_from_A:
-    for team_B in play_in_group_B:
-        LCQ_qualifs_group_A = copy.deepcopy(qualifs_group_A)
-        LCQ_qualifs_group_A.append(team_B)
-        # LCQ_qualifs_group_A.append("T1")
-        list_all_possible_play_in_qualifs.append(LCQ_qualifs_group_A)
+    if impossible_combinations_play_in_both_teams_qualifs_A != qualifs_group_A:
+        for team_B in play_in_group_B:
+            LCQ_qualifs_group_A = copy.deepcopy(qualifs_group_A)
+            LCQ_qualifs_group_A.append(team_B)
+            # LCQ_qualifs_group_A.append("T1")
+            list_all_possible_play_in_qualifs.append(LCQ_qualifs_group_A)
 del LCQ_qualifs_group_A
 del team_B
 del qualifs_group_A
 
 list_2_qualifs_from_B = [list(i) for i in itertools.combinations(play_in_group_B, 2)]
 for qualifs_group_B in list_2_qualifs_from_B:
-    for team_A in play_in_group_A:
-        LCQ_qualifs_group_B = copy.deepcopy(qualifs_group_B)
-        LCQ_qualifs_group_B.append(team_A)
-        # LCQ_qualifs_group_B.append("T1")
-        list_all_possible_play_in_qualifs.append(LCQ_qualifs_group_B)
+    if impossible_combinations_play_in_both_teams_qualifs_B != qualifs_group_B:
+        for team_A in play_in_group_A:
+            LCQ_qualifs_group_B = copy.deepcopy(qualifs_group_B)
+            LCQ_qualifs_group_B.append(team_A)
+            # LCQ_qualifs_group_B.append("T1")
+            list_all_possible_play_in_qualifs.append(LCQ_qualifs_group_B)
 del LCQ_qualifs_group_B
 del team_A
 del qualifs_group_B
@@ -84,10 +90,10 @@ for play_in_qualified_teams in list_all_possible_play_in_qualifs:
 no_wildcard_play_in_teams = ["BLG", "G2", "GG"]
 
 dir_path = dir_path = os.path.dirname(os.path.realpath(__file__))
-workbook = xlsxwriter.Workbook(dir_path + '/main_phase_generator_from_start.xlsx')
+workbook = xlsxwriter.Workbook(dir_path + '/main_phase_generator_after_first_round.xlsx')
 worksheet = workbook.add_worksheet()
 
-content_titles = ["Qualifications from play-ins", "Quarter 1", "Quarter 2", "Quarter 3", "Quarter 4"]
+content_titles = ["Qualifications from play-ins (after first round of play-ins)", "Quarter 1", "Quarter 2", "Quarter 3", "Quarter 4"]
 col = 0
 for content in content_titles:
     worksheet.write(0, col, content)
