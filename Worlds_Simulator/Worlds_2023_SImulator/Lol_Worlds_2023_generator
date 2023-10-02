@@ -1,0 +1,161 @@
+import copy
+from itertools import permutations
+import itertools
+import xlsxwriter
+import os
+
+all_swiss_teams = [
+    "GENG", "T1", "KT", "DK",
+    "JDG", "BLG", "LNG", "WBG",
+    "G2", "FNC", "MAD",
+    "NRG","C9", "TL"
+] 
+
+WQS_teams = ["BDS", "GG"]
+
+all_play_in_teams = ["R7", "GAM", "TWHA", "LOUD", "PSGT", "CTO", "DFM"]
+
+play_in_group_A = ["LOUD", "GAM", "R7", "PSGT"]
+play_in_group_B = ["DFM", "CTO", "TWHA"]
+play_in_group_B_BDS = ["DFM", "CTO", "TWHA", "BDS"]
+play_in_group_B_GG = ["DFM", "CTO", "TWHA", "GG"]
+list_all_possible_play_in_qualifs = []
+
+region_teams = {
+    "CHN" : ["JDG", "BLG", "LNG", "WBG"], 
+    "EU" : ["G2", "FNC", "MAD", "BDS"], 
+    "KR" : ["GENG", "T1", "KT", "DK"], 
+    "NA" : ["NRG", "C9", "TL", "GG"], 
+    "PCS" : ["PSGT", "CTO"], 
+    "VCS": ["GAM", "TWHA"], 
+    "BRE" : ["LOUD"], 
+    "JPN" : ["DFM"], 
+    "LAT" : ["R7"]
+}
+
+team_regions = {
+    "JDG" : "CHN", "BLG" : "CHN", "LNG" : "CHN", "WBG" : "CHN", 
+    "G2" : "EU", "FNC" : "EU", "MAD" : "EU", "BDS" : "EU", 
+    "GENG" : "KR", "T1" : "KR", "KT" : "KR", "DK" : "KR", 
+    "NRG" : "NA", "C9" : "NA", "TL" : "NA", "GG" : "NA", 
+    "CTO" : "PCS", "PSGT" : "PCS", 
+    "GAM" : "VCS", "TWHA" : "VCS", 
+    "LOUD" : "BRE", 
+    "DFM" : "JPN", 
+    "R7" : "LAT"
+}
+
+# Both teams are already in loser bracket, so they can't qualify both to main bracket stage
+impossible_combinations_play_in_both_teams_qualifs_A = []
+impossible_combinations_play_in_both_teams_qualifs_B = []
+
+list_2_qualifs_from_A = [list(i) for i in itertools.combinations(play_in_group_A, 2)]
+list_all_possible_play_in_qualifs += list_2_qualifs_from_A
+
+list_2_qualifs_from_B_no_WQS = [list(i) for i in itertools.combinations(play_in_group_B, 2)]
+list_all_possible_play_in_qualifs += list_2_qualifs_from_B_no_WQS
+
+for team_A in play_in_group_A:
+    for team_B in play_in_group_B:
+        list_all_possible_play_in_qualifs += [[team_A, team_B]]
+
+list_all_possible_play_in_qualifs_BDS = copy.deepcopy(list_all_possible_play_in_qualifs)
+list_all_possible_play_in_qualifs_GG = copy.deepcopy(list_all_possible_play_in_qualifs)
+
+for team in play_in_group_A + play_in_group_B:
+    list_all_possible_play_in_qualifs_BDS += [[team, "BDS"]]
+    list_all_possible_play_in_qualifs_GG += [[team, "GG"]]
+
+del list_all_possible_play_in_qualifs, list_2_qualifs_from_B_no_WQS, list_2_qualifs_from_A
+
+
+main_teams_pool = {1: ["JDG", "GENG", "G2", "NRG"], 2: ["BLG", "T1", "FNC", "C9"], 3: ["LNG", "KT", "MAD", "TL"], 4: ["WBG", "DK"] + all_play_in_teams}
+
+# region_teams = {"CHN" : ["JDG", "BLG"], "EU" : ["G2", "MAD"], "KR" : ["GENG", "T1"], "NA" : ["C9", "GG"], "PCS" : ["PSGT"], "VCS" : ["GAM"], "LJL" : ["DFM"], "BRE" : ["LOUD"], "LAT" : ["R7"]}
+#team_regions = {"BLG" : "CHN", "JDG" : "CHN", "G2" : "EU", "MAD" : "EU", "GENG" : "KR", "T1" : "KR", "C9" : "NA", "GG" : "NA", "PSGT" : "PCS", "GAM" : "VCS", "LOUD" : "BRE", "DFM" : "JPN", "R7" : "LAT"}
+
+main_phase_init = []
+#list_main_phase = [[["JDG"], []], [["GENG"], []]]
+
+list_all_main_phase = []
+dict_all_swiss_stage = {}
+
+copy_main_phase = copy.deepcopy(main_phase_init)
+list_places_first_pool = list(permutations(main_teams_pool[1]))
+
+pool_1_teams = main_teams_pool[1]
+pool_2_teams = main_teams_pool[2]
+pool_3_teams = main_teams_pool[3]
+# list_all_possible_play_in_qualifs = [["DFM", "PSGT", "GAM"], ["BLG", "GG", "G2"]]
+
+for play_in_qualified_teams in list_all_possible_play_in_qualifs_BDS:
+    tuple_play_in_qualified_teams = tuple(play_in_qualified_teams)
+    dict_all_swiss_stage[tuple_play_in_qualified_teams] = []
+    pool_4_teams = copy.deepcopy(play_in_qualified_teams)
+    pool_4_teams.append("DK")
+    pool_4_teams.append("WBG")
+    set_all_possible_pool_4 = list(permutations(pool_4_teams))
+    for affect_pool_1_teams in set_all_possible_pool_4:
+        for i in range(4):
+            ith_pool_1_team = pool_1_teams[i]
+            ith_pool_4_team = affect_pool_1_teams[i]
+            if (team_regions[ith_pool_4_team] == team_regions[ith_pool_1_team]):
+                break
+        else:
+            set_all_possible_pool_3 = list(permutations(pool_3_teams))
+
+            for affect_pool_3_teams in set_all_possible_pool_3:
+                for j in range(4):
+                    ith_pool_2_team = pool_2_teams[j]
+                    ith_pool_3_team = affect_pool_3_teams[j]
+                    if (team_regions[ith_pool_2_team] == team_regions[ith_pool_3_team]):
+                        break
+                else:
+                    for k in range(4):
+                        copy_main_phase.append([pool_1_teams[k], affect_pool_1_teams[k]])
+                        copy_main_phase.append([pool_2_teams[k], affect_pool_3_teams[k]])
+
+                    # if not copy_main_phase in list_all_main_phase:
+                    dict_all_swiss_stage[tuple_play_in_qualified_teams].append(copy_main_phase)
+                    copy_main_phase = copy.deepcopy(main_phase_init)
+
+dir_path = dir_path = os.path.dirname(os.path.realpath(__file__))
+workbook = xlsxwriter.Workbook(dir_path + '/swiss_stage_generator.xlsx')
+worksheet = workbook.add_worksheet()
+
+content_titles = ["Qualifications from play-ins", "Match 1", "Match 2", "Match 3", "Match 4", "Match 5", "Match 6", "Match 7", "Match 8"]
+col = 0
+for content in content_titles:
+    worksheet.write(0, col, content)
+    col = col + 1
+
+row = 2
+
+for qualifs in list_all_possible_play_in_qualifs_BDS:
+    tuple_qualifs = tuple(qualifs)
+    list_all_possible_tirages = dict_all_swiss_stage[tuple_qualifs]
+    nb_tirage_possible = len(list_all_possible_tirages)
+    qualifs_teams_to_write = tuple_qualifs[0] + "/" + tuple_qualifs[1]
+
+    # worksheet.write(row + nb_tirage_possible//2, 0, qualifs_teams_to_write)
+    for i in range(nb_tirage_possible):
+        tirage = list_all_possible_tirages[i]
+        for j in range(8):
+            match = tirage[j]
+            M1_to_write = match[0] + "/" + match[1]
+            worksheet.write(row + i, j + 1, M1_to_write)
+
+    merge_format = workbook.add_format(
+        {
+            "bold": 1,
+            "border": 1,
+            "align": "center",
+            "valign": "vcenter"
+        }
+    )
+    worksheet.set_column("A:A", 30)
+    worksheet.set_column("B:I", 20)
+    worksheet.merge_range(first_row=row, last_row=row+nb_tirage_possible-1, first_col=0, last_col=0, data=qualifs_teams_to_write, cell_format=merge_format)
+    row = row + nb_tirage_possible + 1
+
+workbook.close()
