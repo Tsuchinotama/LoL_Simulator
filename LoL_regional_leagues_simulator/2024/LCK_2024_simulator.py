@@ -29,7 +29,20 @@ class TeamRecords:
             elif self.games_win - self.games_lose > other.games_win - other.games_lose:
                 return False
             else:
-                return self.team in other.reg_season_beated_teams_records
+                if len([rec for rec in self.reg_season_beated_teams_records if rec[0] == other.team]) == 2:
+                    return True
+                elif len([rec for rec in self.reg_season_beated_teams_records if rec[0] == other.team]) == 0:
+                    return False
+                else:
+                    other_win_games = [rec for rec in self.reg_season_beated_teams_records if rec[0] == other.team][0][1]
+                    self_win_games = [rec for rec in other.reg_season_beated_teams_records if rec[0] == self.team][0][1]
+                    if self_win_games > other_win_games:
+                        return True
+                    elif self_win_games < other_win_games:
+                        return False
+                    else:
+
+                        return self.team in other.reg_season_beated_teams_records
 
 class TeamChampionshipPointsRecords:
     def __init__(self, p_team, p_championship_points, p_summer_records):
@@ -48,12 +61,16 @@ class TeamChampionshipPointsRecords:
             elif self.summer_records.games_win - self.summer_records.games_lose > other.summer_records.games_win - other.summer_records.games_lose:
                 return False
             else:
-                return self.team in other.summer_records.reg_season_beated_teams_records
+                noise = random.uniform(-0.1, 0.1)
+                odd_victory_self = min(max(0, 0.5 + (other.team - self.team) / 10 + noise), 1)
+                if (random.uniform(0, 1) < odd_victory_self) :
+                    return True
+                else :
+                    return False
 
-nb_LPL_teams = 17
-LPL_rankings = ["JDG", "BLG", "LNG", "WBG", "EDG", "TES", "OMG", "NIP", "RNG",
-                "ANL", "FPX", "IG", "LGD", "RA", "WE", "TT", "UP"]
-nb_qualifs_MSI = [0 for i in range(17)]
+nb_LCK_teams = 10
+LCK_rankings = ["GENG", "T1", "KT", "DK", "HLE", "DRX", "LSB", "KDF", "NS", "BRI"]
+nb_qualifs_MSI = [0 for i in range(10)]
 
 def best_of_n(nb_games, team_A, team_B) :
     vict_A = 0
@@ -68,7 +85,7 @@ def best_of_n(nb_games, team_A, team_B) :
     while (vict_A < games_to_win and vict_B < games_to_win) :
         noise = random.uniform(-0.1, 0.1)
         #noise = 0
-        odd_victory_A = min(max(0, 0.5 + (team_B - team_A) / 17 + noise), 1)
+        odd_victory_A = min(max(0, 0.5 + (team_B - team_A) / 10 + noise), 1)
         if (random.uniform(0, 1) < odd_victory_A) :
             vict_A = vict_A + 1
         else :
@@ -79,8 +96,8 @@ def best_of_n(nb_games, team_A, team_B) :
         return Result_BO(team_B, vict_B, team_A, vict_A)
 
 def all_games_round_robin(round_robin_res) :
-    for teamA in range(1,nb_LPL_teams+1) :
-        for teamB in range(teamA + 1, nb_LPL_teams+1):
+    for teamA in range(1,nb_LCK_teams+1) :
+        for teamB in range(teamA + 1, nb_LCK_teams+1):
 
             res_match = best_of_n(3, teamA, teamB)
             winner = res_match.win_team - 1 
@@ -89,34 +106,39 @@ def all_games_round_robin(round_robin_res) :
             round_robin_res[winner].series_win += 1
             round_robin_res[winner].games_win += 2
             round_robin_res[winner].games_lose += res_match.score_loser
-            round_robin_res[winner].reg_season_beated_teams_records.append(looser+1)
+            round_robin_res[winner].reg_season_beated_teams_records.append((looser+1, res_match.score_loser))
 
             round_robin_res[looser].series_lose += 1
             round_robin_res[looser].games_win += res_match.score_loser
             round_robin_res[looser].games_lose += 2
 
-    round_robin_res.sort(reverse=True)
+def LCK_spring_playoff_phase1(reg_season_res, championship_points):
+    choice_seed3 = max(reg_season_res[4].team,reg_season_res[5].team)
+    choice_seed4 = min(reg_season_res[4].team,reg_season_res[5].team)
+    res_match1 = best_of_n(5, reg_season_res[2].team, choice_seed3)
+    res_match2 = best_of_n(5, reg_season_res[3].team, choice_seed4)
 
-def LPL_spring_playoff_phase1(RR_res, championship_points):
-    res_match1_bracket1 = best_of_n(5, RR_res[7].team, RR_res[8].team)
-    res_match2_bracket1 = best_of_n(5, RR_res[4].team, res_match1_bracket1.win_team)
-    res_match3_bracket1 = best_of_n(5, RR_res[3].team, res_match2_bracket1.win_team)
+    loser_match1 = res_match1.lose_team
+    winner_match1 = res_match1.win_team
+    rank_loser1 = [i for i,record in enumerate(reg_season_res) if record.team == loser_match1][0]
+    rank_winner1 = [i for i,record in enumerate(reg_season_res) if record.team == winner_match1][0]
+    loser_match2 = res_match2.lose_team
+    winner_match2 = res_match2.win_team
+    rank_loser2 = [i for i,record in enumerate(reg_season_res) if record.team == loser_match2][0]
+    rank_winner2 = [i for i,record in enumerate(reg_season_res) if record.team == winner_match2][0]
 
-    res_match1_bracket2 = best_of_n(5, RR_res[6].team, RR_res[9].team)
-    res_match2_bracket2 = best_of_n(5, RR_res[5].team, res_match1_bracket2.win_team)
-    res_match3_bracket2 = best_of_n(5, RR_res[2].team, res_match2_bracket2.win_team)   
+    if rank_loser1 < rank_loser2:
+        championship_points[loser_match1 - 1][0] += 20
+        championship_points[loser_match2 - 1][0] += 10
+    else:
+        championship_points[loser_match1 - 1][0] += 10
+        championship_points[loser_match2 - 1][0] += 20
 
-    championship_points[res_match2_bracket1.lose_team - 1][0] += 10
-    championship_points[res_match2_bracket2.lose_team - 1][0] += 10
+    return (winner_match1, rank_winner1, winner_match2, rank_winner2)
 
-    championship_points[res_match3_bracket1.lose_team - 1][0] += 20
-    championship_points[res_match3_bracket2.lose_team - 1][0] += 20
-
-    return (res_match3_bracket1.win_team, res_match3_bracket2.win_team)
-
-def LPL_spring_playoff_phase2(RR_res, winner_bracket1, winner_bracket2, championship_points):
-    res_match1_winnerbracket = best_of_n(5, RR_res[0].team, winner_bracket1)  
-    res_match2_winnerbracket = best_of_n(5, RR_res[1].team, winner_bracket2)
+def LCK_spring_playoff_phase2(reg_season_res, SF4, SF3, championship_points):
+    res_match1_winnerbracket = best_of_n(5, reg_season_res[0].team, SF4)  
+    res_match2_winnerbracket = best_of_n(5, reg_season_res[1].team, SF3)
 
     res_match1_looserbracket = best_of_n(5, res_match1_winnerbracket.lose_team, res_match2_winnerbracket.lose_team)
     championship_points[res_match1_looserbracket.lose_team - 1][0] += 30
@@ -131,66 +153,66 @@ def LPL_spring_playoff_phase2(RR_res, winner_bracket1, winner_bracket2, champion
 
     return (res_grandfinal.win_team, res_grandfinal.lose_team)
 
-def LPL_summer_playoff_phase1(RR_res, championship_points):
-    res_match1_bracket1 = best_of_n(5, RR_res[7].team, RR_res[8].team)
+def LCK_summer_playoff_phase1(reg_season_res, championship_points):
+    res_match1_bracket1 = best_of_n(5, reg_season_res[7].team, reg_season_res[8].team)
     looser = res_match1_bracket1.lose_team - 1
     winner = res_match1_bracket1.win_team - 1
     losed_games = res_match1_bracket1.score_loser
-    RR_res[looser].games_win += losed_games
-    RR_res[looser].games_lose += 3
-    RR_res[winner].games_win += 3
-    RR_res[winner].games_lose += losed_games
+    reg_season_res[looser].games_win += losed_games
+    reg_season_res[looser].games_lose += 3
+    reg_season_res[winner].games_win += 3
+    reg_season_res[winner].games_lose += losed_games
 
-    res_match2_bracket1 = best_of_n(5, RR_res[4].team, res_match1_bracket1.win_team)
+    res_match2_bracket1 = best_of_n(5, reg_season_res[4].team, res_match1_bracket1.win_team)
     looser = res_match2_bracket1.lose_team - 1
     winner = res_match2_bracket1.win_team - 1
     losed_games = res_match2_bracket1.score_loser
-    RR_res[looser].games_win += losed_games
-    RR_res[looser].games_lose += 3
-    RR_res[winner].games_win += 3
-    RR_res[winner].games_lose += losed_games
+    reg_season_res[looser].games_win += losed_games
+    reg_season_res[looser].games_lose += 3
+    reg_season_res[winner].games_win += 3
+    reg_season_res[winner].games_lose += losed_games
     championship_points[looser][1] += 10
 
-    res_match3_bracket1 = best_of_n(5, RR_res[3].team, res_match2_bracket1.win_team)
+    res_match3_bracket1 = best_of_n(5, reg_season_res[3].team, res_match2_bracket1.win_team)
     looser = res_match3_bracket1.lose_team - 1
     winner = res_match3_bracket1.win_team - 1
     losed_games = res_match3_bracket1.score_loser
-    RR_res[looser].games_win += losed_games
-    RR_res[looser].games_lose += 3
+    reg_season_res[looser].games_win += losed_games
+    reg_season_res[looser].games_lose += 3
     championship_points[looser][1] += 40
 
-    res_match1_bracket2 = best_of_n(5, RR_res[6].team, RR_res[9].team)
+    res_match1_bracket2 = best_of_n(5, reg_season_res[6].team, reg_season_res[9].team)
     looser = res_match1_bracket2.lose_team - 1
     winner = res_match1_bracket2.win_team - 1
     losed_games = res_match1_bracket2.score_loser
-    RR_res[looser].games_win += losed_games
-    RR_res[looser].games_lose += 3
-    RR_res[winner].games_win += 3
-    RR_res[winner].games_lose += losed_games
+    reg_season_res[looser].games_win += losed_games
+    reg_season_res[looser].games_lose += 3
+    reg_season_res[winner].games_win += 3
+    reg_season_res[winner].games_lose += losed_games
 
-    res_match2_bracket2 = best_of_n(5, RR_res[5].team, res_match1_bracket2.win_team)
+    res_match2_bracket2 = best_of_n(5, reg_season_res[5].team, res_match1_bracket2.win_team)
     looser = res_match2_bracket2.lose_team - 1
     winner = res_match2_bracket2.win_team - 1
     losed_games = res_match2_bracket2.score_loser
-    RR_res[looser].games_win += losed_games
-    RR_res[looser].games_lose += 3
-    RR_res[winner].games_win += 3
-    RR_res[winner].games_lose += losed_games
+    reg_season_res[looser].games_win += losed_games
+    reg_season_res[looser].games_lose += 3
+    reg_season_res[winner].games_win += 3
+    reg_season_res[winner].games_lose += losed_games
     championship_points[looser][1] += 10
 
-    res_match3_bracket2 = best_of_n(5, RR_res[2].team, res_match2_bracket2.win_team)   
+    res_match3_bracket2 = best_of_n(5, reg_season_res[2].team, res_match2_bracket2.win_team)   
     looser = res_match3_bracket2.lose_team - 1
     winner = res_match3_bracket2.win_team - 1
     losed_games = res_match3_bracket2.score_loser
-    RR_res[looser].games_win += losed_games
-    RR_res[looser].games_lose += 3
+    reg_season_res[looser].games_win += losed_games
+    reg_season_res[looser].games_lose += 3
     championship_points[looser][1] += 40
 
     return (res_match3_bracket1.win_team, res_match3_bracket2.win_team)
 
-def LPL_summer_playoff_phase2(RR_res, winner_bracket1, winner_bracket2, championship_points):
-    res_match1_winnerbracket = best_of_n(5, RR_res[0].team, winner_bracket1)  
-    res_match2_winnerbracket = best_of_n(5, RR_res[1].team, winner_bracket2)
+def LCK_summer_playoff_phase2(reg_season_res, winner_bracket1, winner_bracket2, championship_points):
+    res_match1_winnerbracket = best_of_n(5, reg_season_res[0].team, winner_bracket1)  
+    res_match2_winnerbracket = best_of_n(5, reg_season_res[1].team, winner_bracket2)
 
     res_match1_looserbracket = best_of_n(5, res_match1_winnerbracket.lose_team, res_match2_winnerbracket.lose_team)
     championship_points[res_match1_looserbracket.lose_team - 1][1] += 60
@@ -206,7 +228,7 @@ def LPL_summer_playoff_phase2(RR_res, winner_bracket1, winner_bracket2, champion
 
     return res_grandfinal.win_team
 
-def regional_qualifiers_LPL_for_3(regional_qualified_teams):
+def regional_qualifiers_LCK_for_3(regional_qualified_teams):
     res_winnerbracket = best_of_n(5, regional_qualified_teams[0].team, regional_qualified_teams[1].team)  
     seed3 = res_winnerbracket.win_team
 
@@ -216,7 +238,7 @@ def regional_qualifiers_LPL_for_3(regional_qualified_teams):
 
     return (seed3, seed4)
 
-def regional_qualifiers_LPL_for_4(regional_qualified_teams):
+def regional_qualifiers_LCK_for_4(regional_qualified_teams):
     res_winnerbracket = best_of_n(5, regional_qualified_teams[0].team, regional_qualified_teams[1].team)  
     seed3 = res_winnerbracket.win_team
 
@@ -227,14 +249,19 @@ def regional_qualifiers_LPL_for_4(regional_qualified_teams):
     return (seed3, seed4)
 
 for i in range(10000):
-    championship_points = [[0,0] for i in range(17)]
+    championship_points = [[0,0] for i in range(10)]
 
-    spring_res = [TeamRecords(i) for i in range(1,18)]
+    spring_res = [TeamRecords(i) for i in range(1,11)]
     all_games_round_robin(spring_res)
+    all_games_round_robin(spring_res)
+    spring_res.sort(reverse=True)
 
-    (winner_bracket1, winner_bracket2) = LPL_spring_playoff_phase1(spring_res, championship_points)
+    (semi_finalist3, SF3_rank, semi_finalist4, SF4_rank) = LCK_spring_playoff_phase1(spring_res, championship_points)
 
-    (spring_winner,spring_finalist) = LPL_spring_playoff_phase2(spring_res, winner_bracket1, winner_bracket2, championship_points)
+    if SF3_rank > SF4_rank:
+        semi_finalist3, semi_finalist4 = semi_finalist4, semi_finalist3
+
+    (spring_winner,spring_finalist) = LCK_spring_playoff_phase2(spring_res, semi_finalist4, semi_finalist3, championship_points)
 
     nb_qualifs_MSI[spring_winner-1] += 1
     nb_qualifs_MSI[spring_finalist-1] += 1
@@ -256,9 +283,9 @@ for i in range(10000):
     #     else:
     #         MSI_winner_auto_qualif = False 
 
-    # (winner_bracket1, winner_bracket2) = LPL_summer_playoff_phase1(summer_res, championship_points)
+    # (winner_bracket1, winner_bracket2) = LCK_summer_playoff_phase1(summer_res, championship_points)
 
-    # LPL_summer_playoff_phase2(summer_res, winner_bracket1, winner_bracket2, championship_points)
+    # LCK_summer_playoff_phase2(summer_res, winner_bracket1, winner_bracket2, championship_points)
 
     # ind_ranking_res = {}
     # for i,record in enumerate(summer_res):
@@ -276,10 +303,10 @@ for i in range(10000):
     #     regional_qualified_teams.append(record.team)
 
     # if MSI_winner_auto_qualif:
-    #     (seed3,seed4) = regional_qualifiers_LPL_for_3(championship_points_res[2:6])
+    #     (seed3,seed4) = regional_qualifiers_LCK_for_3(championship_points_res[2:6])
     #     worlds_qualified_teams.append(seed3)
     # else:
-    #     (seed3,seed4) = regional_qualifiers_LPL_for_4(championship_points_res[2:6])
+    #     (seed3,seed4) = regional_qualifiers_LCK_for_4(championship_points_res[2:6])
     #     worlds_qualified_teams += [seed3, seed4]
 
     # for team in MSI_qualified_teams:
@@ -287,7 +314,7 @@ for i in range(10000):
 
 avg_strength = 0
 print("Nb de qualifs :")
-for i,team in enumerate(LPL_rankings):
+for i,team in enumerate(LCK_rankings):
     print(team + " : " + str(nb_qualifs_MSI[i]))
     avg_strength += nb_qualifs_MSI[i]*(i+1)
 print("Force moyenne d'une équipe LCK qualifiée au MSI : " + str(avg_strength / 20000))
@@ -296,8 +323,8 @@ print("Force moyenne d'une équipe LCK qualifiée au MSI : " + str(avg_strength 
 fig, ax = plt.subplots()
 ax.bar(range(len(nb_qualifs_MSI)), [t for t in nb_qualifs_MSI]  , align="center")
 ax.set_xticks(range(len(nb_qualifs_MSI)))
-ax.set_xticklabels(LPL_rankings)
+ax.set_xticklabels(LCK_rankings)
 fig.autofmt_xdate()
-plt.title("Equipes de LPL se qualifiant aux MSI (sur 1000 simulations, classement basé sur l'année 2023)", wrap=True)
+plt.title("Equipes de LCK se qualifiant aux MSI (sur 1000 simulations, classement basé sur l'année 2023)", wrap=True)
 
 plt.show()
