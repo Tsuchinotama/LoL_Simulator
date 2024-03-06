@@ -25,7 +25,7 @@ team_regions = {"TES" : "CHN", "JDG" : "CHN", "EDG" : "CHN", "RNG" : "CHN", "G2"
 
 wild_card = ["OCE", "TUR", "BRE", "JPN", "LAT"]
 
-# teams_ratings = {"TES" : 7.257, "DWG" : 7.207, "G2" : 6.884, "JDG" : 6.108, "DRX" : 5.789, "GEN" : 5.713, "FNC" : 5.564, "SNG" : 5.224, "LGD" : 5.154, "RGE" : 4.714, "TSM" : 4.659, "MAD" : 4.383, "TL" : 3.736, "FLY" : 3.698, "UOL" : 3.000, "SUP": 1.674, "MCX" : 1.552, "PSG" : 1.547, "INZ" : 1.485, "V3" : 1.255, "R7" : 0.750, "LGC" : 0.646}
+teams_ratings = {"TES" : 7.257, "DWG" : 7.207, "G2" : 6.884, "JDG" : 6.108, "DRX" : 5.789, "GEN" : 5.713, "FNC" : 5.564, "SNG" : 5.224, "LGD" : 5.154, "RGE" : 4.714, "TSM" : 4.659, "MAD" : 4.383, "TL" : 3.736, "FLY" : 3.698, "UOL" : 3.000, "SUP": 1.674, "MCX" : 1.552, "PSG" : 1.547, "INZ" : 1.485, "V3" : 1.255, "R7" : 0.750, "LGC" : 0.646}
 head_to_head_odds_play_in_group = {
                         "BYG" : {"LOD" : 1.5, "CHF" : 1.59, "EG" : 2.83, "DFM" : 1.72, "FNC" : 2.87},
                         "LOD" : {"BYG" : 2.31, "DFM" : 2.56, "EG" : 3.75, "CHF" : 1.98, "FNC" : 4.2},
