@@ -248,7 +248,8 @@ def regional_qualifiers_LCK_for_4(regional_qualified_teams):
 
     return (seed3, seed4)
 
-for i in range(10000):
+nb_sim = 1000
+for i in range(nb_sim):
     championship_points = [[0,0] for i in range(10)]
 
     spring_res = [TeamRecords(i) for i in range(1,11)]
@@ -317,7 +318,9 @@ print("Nb de qualifs :")
 for i,team in enumerate(LCK_rankings):
     print(team + " : " + str(nb_qualifs_MSI[i]))
     avg_strength += nb_qualifs_MSI[i]*(i+1)
-print("Force moyenne d'une équipe LCK qualifiée au MSI : " + str(avg_strength / 20000))
+print("Force moyenne d'une équipe LCK qualifiée au MSI : " + str(avg_strength / (2 * nb_sim)))
+
+avg_strength = avg_strength / (2 * nb_sim)
 
 #lp = sorted(nb_qualifs_worlds.items())
 fig, ax = plt.subplots()
@@ -325,6 +328,7 @@ ax.bar(range(len(nb_qualifs_MSI)), [t for t in nb_qualifs_MSI]  , align="center"
 ax.set_xticks(range(len(nb_qualifs_MSI)))
 ax.set_xticklabels(LCK_rankings)
 fig.autofmt_xdate()
-plt.title("Equipes de LCK se qualifiant aux MSI (sur 1000 simulations, classement basé sur l'année 2023)", wrap=True)
-
+plt.title("Equipes de LCK se qualifiant aux MSI (sur 1000 simulations, classement basé sur l'année 2023) ; Rang moyen : " + str(avg_strength), wrap=True)
+for i, v in enumerate(nb_qualifs_MSI):
+    plt.text(i - 0.25, v +0.5, str(v))
 plt.show()

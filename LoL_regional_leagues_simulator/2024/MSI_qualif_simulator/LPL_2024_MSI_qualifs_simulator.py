@@ -291,7 +291,8 @@ print("Nb de qualifs :")
 for i,team in enumerate(LPL_rankings):
     print(team + " : " + str(nb_qualifs_MSI[i]))
     avg_strength += nb_qualifs_MSI[i]*(i+1)
-print("Force moyenne d'une équipe LCK qualifiée au MSI : " + str(avg_strength / nb_sim))
+print("Force moyenne d'une équipe LCK qualifiée au MSI : " + str(avg_strength / (2 * nb_sim)))
+avg_strength = avg_strength / (2 * nb_sim)
 
 #lp = sorted(nb_qualifs_worlds.items())
 fig, ax = plt.subplots()
@@ -299,6 +300,7 @@ ax.bar(range(len(nb_qualifs_MSI)), [t for t in nb_qualifs_MSI]  , align="center"
 ax.set_xticks(range(len(nb_qualifs_MSI)))
 ax.set_xticklabels(LPL_rankings)
 fig.autofmt_xdate()
-plt.title("Equipes de LPL se qualifiant aux MSI (sur 1000 simulations, classement basé sur l'année 2023)", wrap=True)
-
+plt.title("Equipes de LPL se qualifiant aux MSI (sur 1000 simulations, classement basé sur l'année 2023) ; Rang moyen : " + str(avg_strength), wrap=True)
+for i, v in enumerate(nb_qualifs_MSI):
+    plt.text(i - 0.25, v +0.5, str(v))
 plt.show()
